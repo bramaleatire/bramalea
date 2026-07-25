@@ -10,6 +10,7 @@
     'website': "",
     'category': 'Uncategorized',
     'version': '1.0',
+    'license': 'LGPL-3',
     'depends': ['stock','product'],
     'data': [
         'views/res_partner_views.xml',
