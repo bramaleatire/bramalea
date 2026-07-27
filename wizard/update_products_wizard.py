@@ -63,9 +63,11 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
         logging.warning('product_dic')
         logging.warning(product_dic)
         
-        tire_brand_ids = self.env['x_tire_brands'].search([])
+        # Relational tire.brand master (replaces the legacy x_tire_brands Studio
+        # model / x_studio_brand_tire field, now retired).
+        tire_brand_ids = self.env['tire.brand'].search([])
         for b in tire_brand_ids:
-            tire_brand_d[b.x_name] = b.id
+            tire_brand_d[b.name] = b.id
 
         tire_type_ids = self.env['x_tire_type'].search([])
         for b in tire_type_ids:
@@ -168,6 +170,19 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
                 brand = row[4]
                 brand_id = tire_brand_d[brand] if brand in tire_brand_d else False
                 product_line = row[5]
+                # Resolve the product line to a relational tire.product.line
+                # under the brand (create on the fly), replacing the legacy
+                # free-text x_studio_product_line_tire.
+                product_line_id = False
+                if product_line and brand_id:
+                    line = self.env['tire.product.line'].search([
+                        ('brand_id', '=', brand_id), ('name', '=', product_line),
+                    ], limit=1)
+                    if not line:
+                        line = self.env['tire.product.line'].create({
+                            'name': product_line, 'brand_id': brand_id,
+                        })
+                    product_line_id = line.id
                 tier = row[6]
                 if name:
                     if type(tier) == str:
@@ -372,8 +387,8 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
                             'x_studio_inventory_type': 'Tire',
                             'categ_id': 48,
                             'x_studio_tire_reference_size': reference_size,
-                            'x_studio_brand_tire': brand_id,
-                            'x_studio_product_line_tire': product_line,
+                            'x_tire_brand_id': brand_id,
+                            'x_tire_product_line_id': product_line_id,
                             'x_studio_tire_tier': tier,
                             'x_studio_tire_type': tire_type_id,
                             'x_studio_tire_sub_type': sub_type_id,
