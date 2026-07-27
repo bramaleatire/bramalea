@@ -181,22 +181,20 @@ Snapshot date: 2026-07-27.
 
 ## SKU normalization — restored dropped zeros
 
-Manufacturer SKUs are fixed-width per brand, but numeric export dropped zeros.
-Direction differs by brand: most drop **leading** zeros; **Dunlop drops trailing**
+Manufacturer SKUs are fixed-width per brand, but numeric export dropped leading
 zeros. Restored **571** codes to canonical width:
 
-| Brand | Width | Zero position | Codes fixed | Example |
-|---|---:|---|---:|---|
-| Michelin | 5 | leading | 346 | `3995` → `03995` |
-| BFGoodrich | 5 | leading | 149 | `1727` → `01727` |
-| Uniroyal | 5 | leading | 69 | `6930` → `06930` |
-| Bridgestone | 6 | leading | 2 | `7147` → `007147` |
-| Firestone | 6 | leading | 1 | `24975` → `024975` |
-| Dunlop | 9 | **trailing** | 4 | `57000010` → `570000100` |
+| Brand | Width | Codes fixed | Example |
+|---|---:|---:|---|
+| Michelin | 5 | 346 | `3995` → `03995` |
+| BFGoodrich | 5 | 149 | `1727` → `01727` |
+| Uniroyal | 5 | 69 | `6930` → `06930` |
+| Bridgestone | 6 | 2 | `7147` → `007147` |
+| Firestone | 6 | 1 | `24975` → `024975` |
+| Dunlop | 9 | 4 | `57000010` → `057000010` |
 
 Goodyear and Cooper are also 9-digit, but every code is already full-width — no
-change needed. Dunlop uses trailing zeros (confirmed: no full-width Dunlop code
-starts with `0`), so it is right-padded, never left-padded.
+change needed. All padding is leading (left-pad).
 
 This resolved the duplicate manufacturer SKU **`24975`**: Michelin `24975` (5-digit)
 vs Firestone `024975` (6-digit) are distinct once zero-padded. **0 duplicate SKUs remain.**
