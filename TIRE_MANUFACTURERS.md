@@ -179,28 +179,33 @@ Snapshot date: 2026-07-27.
 | 80 | Wanli | 1 |
 | | **Total** | **16,361** |
 
-## SKU normalization — restored leading zeros
+## SKU normalization — restored dropped zeros
 
-Manufacturer SKUs are fixed-width per brand, but numeric export dropped leading
-zeros (e.g. Michelin `3995` → `03995`). Restored **567** codes to canonical width
-for the high-confidence fixed-width brands:
+Manufacturer SKUs are fixed-width per brand, but numeric export dropped zeros.
+Direction differs by brand: most drop **leading** zeros; **Dunlop drops trailing**
+zeros. Restored **571** codes to canonical width:
 
-| Brand family | Width | Codes fixed |
-|---|---:|---:|
-| Michelin | 5 | 346 |
-| BFGoodrich | 5 | 149 |
-| Uniroyal | 5 | 69 |
-| Bridgestone | 6 | 2 |
-| Firestone | 6 | 1 |
+| Brand | Width | Zero position | Codes fixed | Example |
+|---|---:|---|---:|---|
+| Michelin | 5 | leading | 346 | `3995` → `03995` |
+| BFGoodrich | 5 | leading | 149 | `1727` → `01727` |
+| Uniroyal | 5 | leading | 69 | `6930` → `06930` |
+| Bridgestone | 6 | leading | 2 | `7147` → `007147` |
+| Firestone | 6 | leading | 1 | `24975` → `024975` |
+| Dunlop | 9 | **trailing** | 4 | `57000010` → `570000100` |
+
+Goodyear and Cooper are also 9-digit, but every code is already full-width — no
+change needed. Dunlop uses trailing zeros (confirmed: no full-width Dunlop code
+starts with `0`), so it is right-padded, never left-padded.
 
 This resolved the duplicate manufacturer SKU **`24975`**: Michelin `24975` (5-digit)
 vs Firestone `024975` (6-digit) are distinct once zero-padded. **0 duplicate SKUs remain.**
 
-### Brands NOT auto-padded (mixed code systems — need width confirmation)
+### Brands left as-is (mixed code systems — not zero-drops)
 
-- **Greentrac** — mixes 13-digit UPCs with 7-digit part numbers (different systems, not zero-drops).
-- **Kapsen** (6/7/9), **Dunlop** (8/9), **Double Star** (7/8), **Carlisle** (6/7) — genuinely
-  variable widths; padding withheld pending the correct canonical width per brand.
+- **Greentrac** — mixes 13-digit UPCs with 7-digit part numbers (different systems).
+- **Kapsen** (6/7/9), **Double Star** (7/8), **Carlisle** (6/7) — genuinely variable
+  widths; left untouched unless a conflict surfaces.
 
 ## Other data-quality flags
 
