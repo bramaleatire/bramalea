@@ -1,11 +1,15 @@
 # Tire Manufacturers in Odoo Inventory
 
-Source: `05_odoo_import/import_tire_brand.csv` (the ready-to-load `tire.brand` list),
-cross-referenced against `import_product_template.csv` (16,361 tire SKUs).
+Source: `odoo_import/import_tire_brand.csv` (ready-to-load `tire.brand` list),
+cross-referenced against `odoo_import/import_product_template.csv` (16,361 tire SKUs).
 Snapshot date: 2026-07-27.
 
-**81 manufacturers**, covering all 16,361 tire SKUs in the product master
+**80 manufacturers**, covering all 16,361 tire SKUs in the product master
 (every SKU resolves to exactly one brand).
+
+> The former combined `iLink / ZMAX` record has been split: **iLink** and **ZMAX**
+> are now two independent brands (its 5 SKUs mapped to existing iLink lines). This
+> brings the count from 81 to 80.
 
 ## Alphabetical
 
@@ -40,7 +44,6 @@ Snapshot date: 2026-07-27.
 - Hankook
 - Hercules
 - iLink
-- iLink / ZMAX
 - Imperial
 - Ironhead
 - Ironman
@@ -108,7 +111,7 @@ Snapshot date: 2026-07-27.
 | 11 | Ovation | 466 |
 | 12 | Uniroyal | 444 |
 | 13 | Fuzion | 245 |
-| 14 | iLink | 173 |
+| 14 | iLink | 178 |
 | 15 | Toyo | 167 |
 | 16 | General Tire | 124 |
 | 17 | Cooper | 114 |
@@ -145,44 +148,43 @@ Snapshot date: 2026-07-27.
 | 48 | Radar | 7 |
 | 49 | GT Radial | 6 |
 | 50 | Farroad | 5 |
-| 51 | iLink / ZMAX | 5 |
-| 52 | RoadBoss | 5 |
-| 53 | Anchee | 4 |
-| 54 | Sunfull | 4 |
-| 55 | DovRoad | 3 |
-| 56 | Mazzini | 3 |
-| 57 | SureTrac | 3 |
-| 58 | Vredestein | 3 |
-| 59 | ZMAX | 3 |
-| 60 | FISK | 2 |
-| 61 | Galaxy | 2 |
-| 62 | Gislaved | 2 |
-| 63 | Maxxis | 2 |
-| 64 | Nankang | 2 |
-| 65 | Onyx | 2 |
-| 66 | Predator | 2 |
-| 67 | RidgeTrak | 2 |
-| 68 | RoadKing | 2 |
-| 69 | Aeolus | 1 |
-| 70 | Annaite | 1 |
-| 71 | Evergreen | 1 |
-| 72 | Federal | 1 |
-| 73 | Fronway | 1 |
-| 74 | Imperial | 1 |
-| 75 | Ironhead | 1 |
-| 76 | Kendra | 1 |
-| 77 | Pro Comp | 1 |
-| 78 | Rydanz | 1 |
-| 79 | Tracmax | 1 |
-| 80 | Trail Buster | 1 |
-| 81 | Wanli | 1 |
+| 51 | RoadBoss | 5 |
+| 52 | Anchee | 4 |
+| 53 | Sunfull | 4 |
+| 54 | DovRoad | 3 |
+| 55 | Mazzini | 3 |
+| 56 | SureTrac | 3 |
+| 57 | Vredestein | 3 |
+| 58 | ZMAX | 3 |
+| 59 | FISK | 2 |
+| 60 | Galaxy | 2 |
+| 61 | Gislaved | 2 |
+| 62 | Maxxis | 2 |
+| 63 | Nankang | 2 |
+| 64 | Onyx | 2 |
+| 65 | Predator | 2 |
+| 66 | RidgeTrak | 2 |
+| 67 | RoadKing | 2 |
+| 68 | Aeolus | 1 |
+| 69 | Annaite | 1 |
+| 70 | Evergreen | 1 |
+| 71 | Federal | 1 |
+| 72 | Fronway | 1 |
+| 73 | Imperial | 1 |
+| 74 | Ironhead | 1 |
+| 75 | Kendra | 1 |
+| 76 | Pro Comp | 1 |
+| 77 | Rydanz | 1 |
+| 78 | Tracmax | 1 |
+| 79 | Trail Buster | 1 |
+| 80 | Wanli | 1 |
 | | **Total** | **16,361** |
 
-## Notes
+## Data-quality flags (for human resolution)
 
-- `iLink`, `ZMAX`, and `iLink / ZMAX` appear as three separate brand records — an unresolved
-  duplicate/merge decision from the manufacturer cleanup sheet (`manufacturers_master.csv`,
-  the "11 cleanup decisions"). They likely collapse to a single brand family; kept as-is here
-  to match the current import file.
-- This is the structural brand master (manufacturers carried across feeds + stocked inventory).
-  It is not a stock-on-hand report — inventory/stock levels are a separate, deferred pass.
+- **Duplicate manufacturer SKU `24975`** — collides between `Michelin XDS 2`
+  (225/70R19.5, from the Michelin invoice feed) and a `Firestone` stub
+  (225/70R19.5, from stocked inventory). Manufacturer SKU is the uniqueness key,
+  so one must be corrected/merged before the constraint is enabled (BUILD_SPEC §6).
+- **2,950 SKUs (18%)** have a brand but no product-line link — back-fill pending
+  per-brand feeds (BUILD_SPEC §6).
