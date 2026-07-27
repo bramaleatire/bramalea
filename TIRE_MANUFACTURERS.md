@@ -7,9 +7,8 @@ Snapshot date: 2026-07-27.
 **80 manufacturers**, covering all 16,361 tire SKUs in the product master
 (every SKU resolves to exactly one brand).
 
-> The former combined `iLink / ZMAX` record has been split: **iLink** and **ZMAX**
-> are now two independent brands (its 5 SKUs mapped to existing iLink lines). This
-> brings the count from 81 to 80.
+> `iLink` and `ZMAX` are two independent brands (the former combined `iLink / ZMAX`
+> record was split; its 5 SKUs mapped to existing iLink lines). Count: 81 → 80.
 
 ## Alphabetical
 
@@ -180,11 +179,29 @@ Snapshot date: 2026-07-27.
 | 80 | Wanli | 1 |
 | | **Total** | **16,361** |
 
-## Data-quality flags (for human resolution)
+## SKU normalization — restored leading zeros
 
-- **Duplicate manufacturer SKU `24975`** — collides between `Michelin XDS 2`
-  (225/70R19.5, from the Michelin invoice feed) and a `Firestone` stub
-  (225/70R19.5, from stocked inventory). Manufacturer SKU is the uniqueness key,
-  so one must be corrected/merged before the constraint is enabled (BUILD_SPEC §6).
-- **2,950 SKUs (18%)** have a brand but no product-line link — back-fill pending
-  per-brand feeds (BUILD_SPEC §6).
+Manufacturer SKUs are fixed-width per brand, but numeric export dropped leading
+zeros (e.g. Michelin `3995` → `03995`). Restored **567** codes to canonical width
+for the high-confidence fixed-width brands:
+
+| Brand family | Width | Codes fixed |
+|---|---:|---:|
+| Michelin | 5 | 346 |
+| BFGoodrich | 5 | 149 |
+| Uniroyal | 5 | 69 |
+| Bridgestone | 6 | 2 |
+| Firestone | 6 | 1 |
+
+This resolved the duplicate manufacturer SKU **`24975`**: Michelin `24975` (5-digit)
+vs Firestone `024975` (6-digit) are distinct once zero-padded. **0 duplicate SKUs remain.**
+
+### Brands NOT auto-padded (mixed code systems — need width confirmation)
+
+- **Greentrac** — mixes 13-digit UPCs with 7-digit part numbers (different systems, not zero-drops).
+- **Kapsen** (6/7/9), **Dunlop** (8/9), **Double Star** (7/8), **Carlisle** (6/7) — genuinely
+  variable widths; padding withheld pending the correct canonical width per brand.
+
+## Other data-quality flags
+
+- **2,950 SKUs (18%)** have a brand but no product-line link — back-fill pending per-brand feeds.
