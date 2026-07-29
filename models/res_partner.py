@@ -76,7 +76,6 @@ class ResPartner(models.Model):
                 _logger.error("Error calling Laravel API for %s: %s", partner.name, e)
 
     def write(self, vals):
-        logging.warning(vals)
         if 'portal_status' in vals:
             for partner in self:
                 if partner.portal_status != vals['portal_status']:
