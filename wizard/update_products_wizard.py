@@ -37,6 +37,7 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
         skus_dic = {}
         product_dic = {}
         tire_brand_d = {}
+        tire_product_line_d = {}
         tire_type_d = {}
         sub_type_d = {}
         tread_type_d = {}
@@ -63,9 +64,18 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
         logging.warning('product_dic')
         logging.warning(product_dic)
         
-        tire_brand_ids = self.env['x_tire_brands'].search([])
+        # Brand and product line live on the relational master (tire.brand ->
+        # tire.product.line), not the retired x_studio_* Studio fields. Keyed on
+        # the lowercased name so a case variant in the sheet still matches.
+        tire_brand_ids = self.env['tire.brand'].with_context(active_test=False).search([])
         for b in tire_brand_ids:
-            tire_brand_d[b.x_name] = b.id
+            if b.name:
+                tire_brand_d[b.name.strip().lower()] = b.id
+
+        tire_line_ids = self.env['tire.product.line'].with_context(active_test=False).search([])
+        for l in tire_line_ids:
+            if l.name:
+                tire_product_line_d[(l.brand_id.id, l.name.strip().lower())] = l.id
 
         tire_type_ids = self.env['x_tire_type'].search([])
         for b in tire_type_ids:
@@ -166,8 +176,25 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
                 #tire_size = row[1] #falta
                 name = row[2]
                 brand = row[4]
-                brand_id = tire_brand_d[brand] if brand in tire_brand_d else False
+                brand_key = str(brand).strip().lower() if brand else ''
+                brand_id = tire_brand_d.get(brand_key, False)
                 product_line = row[5]
+                # A line belongs to exactly one brand, so it can only be
+                # resolved once the brand is known; unknown lines are created
+                # under that brand rather than dropped.
+                product_line_id = False
+                line_name = str(product_line).strip() if product_line else ''
+                if brand_id and line_name:
+                    line_key = (brand_id, line_name.lower())
+                    if line_key in tire_product_line_d:
+                        product_line_id = tire_product_line_d[line_key]
+                    else:
+                        line = self.env['tire.product.line'].create({
+                            'name': line_name,
+                            'brand_id': brand_id,
+                        })
+                        product_line_id = line.id
+                        tire_product_line_d[line_key] = line.id
                 tier = row[6]
                 if name:
                     if type(tier) == str:
@@ -372,8 +399,8 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
                             'x_studio_inventory_type': 'Tire',
                             'categ_id': 48,
                             'x_studio_tire_reference_size': reference_size,
-                            'x_studio_brand_tire': brand_id,
-                            'x_studio_product_line_tire': product_line,
+                            'x_tire_brand_id': brand_id,
+                            'x_tire_product_line_id': product_line_id,
                             'x_studio_tire_tier': tier,
                             'x_studio_tire_type': tire_type_id,
                             'x_studio_tire_sub_type': sub_type_id,
