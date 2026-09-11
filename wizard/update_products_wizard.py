@@ -85,7 +85,6 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
         tread_type_ids = self.env['x_tire_tread_type'].search([])
         for b in tread_type_ids:
             tread_type_d[b.x_name] = b.id
-        logging.warning(tread_type_d)
         
         width_ids = self.env['x_tire_width'].search([])
         for b in width_ids:
@@ -153,10 +152,8 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
         wholesale_d_id = 6
         
         for row in sheet.iter_rows(min_row=1, values_only=True):  # Assuming header is in row 1
-            logging.warning(count)
             if count >=1:
                 sku = row[0]
-                logging.warning(sku)
                 skus.append(sku)
                 skus_dic[sku] = row
                 barcode = row[0]
@@ -195,8 +192,6 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
                 tier = row[6]
                 if name:
                     if type(tier) == str:
-                        logging.warning("si es STR")
-                        logging.warning(tier)
                         if "X" in str(tier):
                             tier = float(str(tier).replace("X", ""))
                         if "x" in str(tier):
@@ -383,7 +378,6 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
                     #     vendor_id = partner_id
                     
                     if str(barcode) not in product_dic:
-                        logging.warning(barcode)
     
                         p_dic = {
                             'name':name,
@@ -421,13 +415,11 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
                             'x_studio_warranty': warranty,
                         }
     
-                        logging.warning(p_dic)
                         
                         new_product_id = self.env['product.template'].create(p_dic)
                         new_product_id.write({'standard_price': cost})
                         # if vendor_id:
                         #     supplier_info = self.env['product.supplierinfo'].create({''})
-                        logging.warning(new_product_id)
                         if retail_pricelist != "#DIV/0!" and retail_pricelist is not None:
                             if float(retail_pricelist) > 0:
                                 pricelist_retail = self.env['product.pricelist.item'].create({
