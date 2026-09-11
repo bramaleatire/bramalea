@@ -61,9 +61,6 @@ class BramaleaUpdateProductsWizard(models.TransientModel):
             barcode = product.barcode
             product_dic[barcode] = product
 
-        logging.warning('product_dic')
-        logging.warning(product_dic)
-        
         # Brand and product line live on the relational master (tire.brand ->
         # tire.product.line), not the retired x_studio_* Studio fields. Keyed on
         # the lowercased name so a case variant in the sheet still matches.
